@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -39,19 +39,24 @@ from torch.nn.modules import rnn
 class ActorCritic(nn.Module):
     is_recurrent = False
 
-    def __init__(self, num_actor_obs,
-                 num_critic_obs,
-                 num_actions,
-                 actor_hidden_dims=[256, 256, 256],
-                 critic_hidden_dims=[256, 256, 256],
-                 activation='elu',
-                 init_noise_std=1.0,
-                 z_dim=12,
-                 privileged_dim=199,
-                 **kwargs):
+    def __init__(
+        self,
+        num_actor_obs,
+        num_critic_obs,
+        num_actions,
+        actor_hidden_dims=[256, 256, 256],
+        critic_hidden_dims=[256, 256, 256],
+        activation="elu",
+        init_noise_std=1.0,
+        z_dim=12,
+        privileged_dim=199,
+        **kwargs,
+    ):
         if kwargs:
-            print("ActorCritic.__init__ got unexpected arguments, which will be ignored: " + str(
-                [key for key in kwargs.keys()]))
+            print(
+                "ActorCritic.__init__ got unexpected arguments, which will be ignored: "
+                + str([key for key in kwargs.keys()])
+            )
         super(ActorCritic, self).__init__()
 
         activation = get_activation(activation)
@@ -72,7 +77,9 @@ class ActorCritic(nn.Module):
             if l == len(actor_hidden_dims) - 1:
                 actor_layers.append(nn.Linear(actor_hidden_dims[l], num_actions))
             else:
-                actor_layers.append(nn.Linear(actor_hidden_dims[l], actor_hidden_dims[l + 1]))
+                actor_layers.append(
+                    nn.Linear(actor_hidden_dims[l], actor_hidden_dims[l + 1])
+                )
                 actor_layers.append(activation)
         self.actor = nn.Sequential(*actor_layers)
 
@@ -84,7 +91,9 @@ class ActorCritic(nn.Module):
             if l == len(critic_hidden_dims) - 1:
                 critic_layers.append(nn.Linear(critic_hidden_dims[l], 1))
             else:
-                critic_layers.append(nn.Linear(critic_hidden_dims[l], critic_hidden_dims[l + 1]))
+                critic_layers.append(
+                    nn.Linear(critic_hidden_dims[l], critic_hidden_dims[l + 1])
+                )
                 critic_layers.append(activation)
         self.critic = nn.Sequential(*critic_layers)
 
@@ -113,8 +122,12 @@ class ActorCritic(nn.Module):
     @staticmethod
     # not used at the moment
     def init_weights(sequential, scales):
-        [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
-         enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
+        [
+            torch.nn.init.orthogonal_(module.weight, gain=scales[idx])
+            for idx, module in enumerate(
+                mod for mod in sequential if isinstance(mod, nn.Linear)
+            )
+        ]
 
     def reset(self, dones=None):
         pass
@@ -136,11 +149,13 @@ class ActorCritic(nn.Module):
 
     def update_distribution(self, observations):
         mean = self.actor(observations)
-        self.distribution = Normal(mean, mean * 0. + self.std)
+        self.distribution = Normal(mean, mean * 0.0 + self.std)
 
     def act(self, observations, **kwargs):
-        z = self.encoder(observations[:, -self.privileged_dim:])
-        concat_observations = torch.concat((observations[:, :-self.privileged_dim], z), dim=-1)
+        z = self.encoder(observations[:, -self.privileged_dim :])
+        concat_observations = torch.concat(
+            (observations[:, : -self.privileged_dim], z), dim=-1
+        )
         self.update_distribution(concat_observations)
         return self.distribution.sample()
 
@@ -152,8 +167,10 @@ class ActorCritic(nn.Module):
         return actions_mean
 
     def evaluate(self, critic_observations, **kwargs):
-        encoder_z = self.encoder(critic_observations[:, -self.privileged_dim:])
-        concat_observations = torch.concat((critic_observations[:, :-self.privileged_dim], encoder_z), dim=-1)
+        encoder_z = self.encoder(critic_observations[:, -self.privileged_dim :])
+        concat_observations = torch.concat(
+            (critic_observations[:, : -self.privileged_dim], encoder_z), dim=-1
+        )
         value = self.critic(concat_observations)
         return value
 
