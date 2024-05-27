@@ -32,7 +32,6 @@ import torch
 
 from .base_config import BaseConfig
 
-
 free_mem, _ = torch.cuda.mem_get_info()
 
 NUM_ENVS = 8192 if free_mem > 10e9 else 2048

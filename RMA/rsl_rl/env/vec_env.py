@@ -3,8 +3,9 @@
 
 from __future__ import annotations
 
-import torch
 from abc import ABC, abstractmethod
+
+import torch
 
 
 class VecEnv(ABC):

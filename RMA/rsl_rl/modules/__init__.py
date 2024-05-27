@@ -29,5 +29,5 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 from .actor_critic_recurrent import ActorCriticRecurrent
-from .actor_critic_teacher import TeacherActorCritic
 from .actor_critic_student import StudentActorCritic
+from .actor_critic_teacher import TeacherActorCritic

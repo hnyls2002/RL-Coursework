@@ -28,15 +28,15 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-import os
 import copy
-import torch
-import numpy as np
+import os
 import random
-from isaacgym import gymapi
-from isaacgym import gymutil
 
-from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
+import numpy as np
+import torch
+from isaacgym import gymapi, gymutil
+
+from legged_gym import LEGGED_GYM_ENVS_DIR, LEGGED_GYM_ROOT_DIR
 
 
 def class_to_dict(obj) -> dict:

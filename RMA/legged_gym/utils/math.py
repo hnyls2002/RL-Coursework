@@ -28,11 +28,12 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-import torch
-from torch import Tensor
-import numpy as np
-from isaacgym.torch_utils import quat_apply, normalize
 from typing import Tuple
+
+import numpy as np
+import torch
+from isaacgym.torch_utils import normalize, quat_apply
+from torch import Tensor
 
 
 # @ torch.jit.script
