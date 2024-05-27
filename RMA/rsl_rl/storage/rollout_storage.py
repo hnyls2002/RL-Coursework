@@ -28,8 +28,8 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-import torch
 import numpy as np
+import torch
 
 from rsl_rl.utils import split_and_pad_trajectories
 

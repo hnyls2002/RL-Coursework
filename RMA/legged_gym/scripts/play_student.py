@@ -27,27 +27,25 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
-import os
 import inspect
+import os
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
-from legged_gym import LEGGED_GYM_ROOT_DIR
-
-
 import isaacgym
-from legged_gym.envs import *
-from legged_gym.utils import (
-    get_args,
-    export_policy_as_jit,
-    task_registry,
-    Logger,
-    get_load_path,
-)
-
 import numpy as np
 import torch
+
+from legged_gym import LEGGED_GYM_ROOT_DIR
+from legged_gym.envs import *
+from legged_gym.utils import (
+    Logger,
+    export_policy_as_jit,
+    get_args,
+    get_load_path,
+    task_registry,
+)
 
 
 def play(args):

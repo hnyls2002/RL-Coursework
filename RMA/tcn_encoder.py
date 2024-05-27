@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.optim import Adam
 from torch.distributions import Normal
+from torch.optim import Adam
 
 
 class TcnEncoder(nn.Module):

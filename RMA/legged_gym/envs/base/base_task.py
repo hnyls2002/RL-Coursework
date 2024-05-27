@@ -29,10 +29,9 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 import sys
-from isaacgym import gymapi
-from isaacgym import gymutil
-import numpy as np
+
 import torch
+from isaacgym import gymapi, gymutil
 
 
 # Base class for RL tasks

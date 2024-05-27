@@ -28,17 +28,17 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-import time
 import os
-from collections import deque
 import statistics
+import time
+from collections import deque
 
-from torch.utils.tensorboard import SummaryWriter
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from rsl_rl.algorithms import PPO
-from rsl_rl.modules import ActorCriticRecurrent, StudentActorCritic, TeacherActorCritic
 from rsl_rl.env import VecEnv
+from rsl_rl.modules import ActorCriticRecurrent, StudentActorCritic, TeacherActorCritic
 from tcn_encoder import TcnEncoder
 
 

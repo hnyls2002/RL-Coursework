@@ -28,10 +28,11 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-import matplotlib.pyplot as plt
-import numpy as np
 from collections import defaultdict
 from multiprocessing import Process, Value
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Logger:

@@ -29,21 +29,21 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 
-import numpy as np
+import inspect
 import os
 from datetime import datetime
 
-import os
-import inspect
+import numpy as np
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
 
 import isaacgym
+import torch
+
 from legged_gym.envs import *
 from legged_gym.utils import get_args  # , task_registry
-import torch
 
 
 def train(args):

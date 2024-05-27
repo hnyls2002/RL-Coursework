@@ -28,24 +28,23 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-from legged_gym import LEGGED_GYM_ROOT_DIR, envs
-from time import time
-from warnings import WarningMessage
-import numpy as np
 import os
+from time import time
+from typing import Dict, Tuple
+from warnings import WarningMessage
 
-from isaacgym.torch_utils import *
-from isaacgym import gymtorch, gymapi, gymutil
-
+import numpy as np
 import torch
+from isaacgym import gymapi, gymtorch, gymutil
+from isaacgym.torch_utils import *
 from torch import Tensor
-from typing import Tuple, Dict
 
-from legged_gym import LEGGED_GYM_ROOT_DIR
+from legged_gym import LEGGED_GYM_ROOT_DIR, envs
 from legged_gym.envs.base.base_task import BaseTask
-from legged_gym.utils.terrain import Terrain
-from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
+from legged_gym.utils.math import quat_apply_yaw, torch_rand_sqrt_float, wrap_to_pi
+from legged_gym.utils.terrain import Terrain
+
 from .legged_robot_config import LeggedRobotCfg
 
 

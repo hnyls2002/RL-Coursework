@@ -31,22 +31,23 @@
 import os
 from datetime import datetime
 from typing import Tuple
-import torch
-import numpy as np
 
+import numpy as np
+import torch
+
+from legged_gym import LEGGED_GYM_ENVS_DIR, LEGGED_GYM_ROOT_DIR
+from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 from rsl_rl.env import VecEnv
 from rsl_rl.runners import TrainStudentRunner, TrainTeacherRunner
 
-from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
 from .helpers import (
-    get_args,
-    update_cfg_from_args,
     class_to_dict,
+    get_args,
     get_load_path,
-    set_seed,
     parse_sim_params,
+    set_seed,
+    update_cfg_from_args,
 )
-from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 
 
 class TaskRegistry:
