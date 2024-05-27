@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -39,19 +39,24 @@ from torch.nn.modules import rnn
 class TeacherActorCritic(nn.Module):
     is_recurrent = False
 
-    def __init__(self, num_actor_obs,
-                 num_critic_obs,
-                 num_actions,
-                 actor_hidden_dims=[256, 256, 256],
-                 critic_hidden_dims=[256, 256, 256],
-                 activation='elu',
-                 init_noise_std=1.0,
-                 latent_dim=16,
-                 privileged_dim=203,
-                 **kwargs):
+    def __init__(
+        self,
+        num_actor_obs,
+        num_critic_obs,
+        num_actions,
+        actor_hidden_dims=[256, 256, 256],
+        critic_hidden_dims=[256, 256, 256],
+        activation="elu",
+        init_noise_std=1.0,
+        latent_dim=16,
+        privileged_dim=203,
+        **kwargs,
+    ):
         if kwargs:
-            print("ActorCritic.__init__ got unexpected arguments, which will be ignored: " + str(
-                [key for key in kwargs.keys()]))
+            print(
+                "ActorCritic.__init__ got unexpected arguments, which will be ignored: "
+                + str([key for key in kwargs.keys()])
+            )
         super(TeacherActorCritic, self).__init__()
 
         activation = get_activation(activation)
@@ -69,7 +74,9 @@ class TeacherActorCritic(nn.Module):
             if l == len(actor_hidden_dims) - 1:
                 actor_layers.append(nn.Linear(actor_hidden_dims[l], num_actions))
             else:
-                actor_layers.append(nn.Linear(actor_hidden_dims[l], actor_hidden_dims[l + 1]))
+                actor_layers.append(
+                    nn.Linear(actor_hidden_dims[l], actor_hidden_dims[l + 1])
+                )
                 actor_layers.append(activation)
         self.actor = nn.Sequential(*actor_layers)
 
@@ -81,7 +88,9 @@ class TeacherActorCritic(nn.Module):
             if l == len(critic_hidden_dims) - 1:
                 critic_layers.append(nn.Linear(critic_hidden_dims[l], 1))
             else:
-                critic_layers.append(nn.Linear(critic_hidden_dims[l], critic_hidden_dims[l + 1]))
+                critic_layers.append(
+                    nn.Linear(critic_hidden_dims[l], critic_hidden_dims[l + 1])
+                )
                 critic_layers.append(activation)
         self.critic = nn.Sequential(*critic_layers)
 
@@ -103,8 +112,12 @@ class TeacherActorCritic(nn.Module):
     @staticmethod
     # not used at the moment
     def init_weights(sequential, scales):
-        [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
-         enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
+        [
+            torch.nn.init.orthogonal_(module.weight, gain=scales[idx])
+            for idx, module in enumerate(
+                mod for mod in sequential if isinstance(mod, nn.Linear)
+            )
+        ]
 
     def reset(self, dones=None):
         pass
@@ -126,30 +139,36 @@ class TeacherActorCritic(nn.Module):
 
     def update_distribution(self, observations):
         mean = self.actor(observations)
-        self.distribution = Normal(mean, mean * 0. + self.std)
+        self.distribution = Normal(mean, mean * 0.0 + self.std)
 
     def act(self, observations, **kwargs):
-        latent_vector = self.encoder(observations[:, -self.privileged_dim:])
-        concat_observations = torch.concat((observations[:, :-self.privileged_dim], latent_vector), dim=-1)
+        latent_vector = self.encoder(observations[:, -self.privileged_dim :])
+        concat_observations = torch.concat(
+            (observations[:, : -self.privileged_dim], latent_vector), dim=-1
+        )
         self.update_distribution(concat_observations)
         return self.distribution.sample()
 
-    def get_latent_vector(self,observations):
-        latent_vector = self.encoder(observations[:, -self.privileged_dim:])
+    def get_latent_vector(self, observations):
+        latent_vector = self.encoder(observations[:, -self.privileged_dim :])
         return latent_vector
 
     def get_actions_log_prob(self, actions):
         return self.distribution.log_prob(actions).sum(dim=-1)
 
     def act_inference(self, observations):
-        latent_vector = self.encoder(observations[:, -self.privileged_dim:])
-        concat_observations = torch.concat((observations[:, :-self.privileged_dim], latent_vector), dim=-1)
+        latent_vector = self.encoder(observations[:, -self.privileged_dim :])
+        concat_observations = torch.concat(
+            (observations[:, : -self.privileged_dim], latent_vector), dim=-1
+        )
         actions_mean = self.actor(concat_observations)
         return actions_mean
 
     def evaluate(self, critic_observations, **kwargs):
-        latent_vector = self.encoder(critic_observations[:, -self.privileged_dim:])
-        concat_observations = torch.concat((critic_observations[:, :-self.privileged_dim], latent_vector), dim=-1)
+        latent_vector = self.encoder(critic_observations[:, -self.privileged_dim :])
+        concat_observations = torch.concat(
+            (critic_observations[:, : -self.privileged_dim], latent_vector), dim=-1
+        )
         value = self.critic(concat_observations)
         return value
 
@@ -175,31 +194,32 @@ def get_activation(act_name):
 
 
 class Encoder(nn.Module):
-    def __init__(self,
-                 latent_dim = 16,
-                 ):
+    def __init__(
+        self,
+        latent_dim=16,
+    ):
 
         super().__init__()
         self.latent_dim = latent_dim
-        self.linear1_1 = nn.Linear(17*11,128)
+        self.linear1_1 = nn.Linear(17 * 11, 128)
 
-        self.linear1_2 = nn.Linear(12,64)
+        self.linear1_2 = nn.Linear(12, 64)
         self.linear1_3 = nn.Linear(4, 64)
         self.relu1 = nn.ELU()
 
-        self.linear2 = nn.Linear(256,256)
+        self.linear2 = nn.Linear(256, 256)
         self.relu2 = nn.ELU()
         self.linear3 = nn.Linear(256, latent_dim)
         self.relu3 = nn.ELU()
 
     def forward(self, privileged_obs):
-        height = privileged_obs[:,:17*11]
-        force = privileged_obs[:,17*11:17*11+12]
-        paras = privileged_obs[:,17*11+12:]
+        height = privileged_obs[:, : 17 * 11]
+        force = privileged_obs[:, 17 * 11 : 17 * 11 + 12]
+        paras = privileged_obs[:, 17 * 11 + 12 :]
         x1 = self.linear1_1(height)
         x2 = self.linear1_2(force)
         x3 = self.linear1_3(paras)
-        x = torch.cat((x1,x2,x3),dim=1)
+        x = torch.cat((x1, x2, x3), dim=1)
         x = self.relu1(x)
         x = self.linear2(x)
         x = self.relu2(x)

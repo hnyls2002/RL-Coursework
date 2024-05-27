@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -29,35 +29,42 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 
-
 import numpy as np
 import os
 from datetime import datetime
 
 import os
 import inspect
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
 
 import isaacgym
 from legged_gym.envs import *
-from legged_gym.utils import get_args#, task_registry
+from legged_gym.utils import get_args  # , task_registry
 import torch
+
 
 def train(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
 
-    train_cfg.runner.run_name = 'student'
+    train_cfg.runner.run_name = "student"
     train_cfg.runner.resume = True
-    train_cfg.runner.load_run = 'Mar17_11-36-01_teacher'
+    train_cfg.runner.load_run = "Mar17_11-36-01_teacher"
     train_cfg.runner.checkpoint = -1
 
     env, env_cfg = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
-    ppo_runner, train_cfg = task_registry.make_student_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
-    ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
+    ppo_runner, train_cfg = task_registry.make_student_runner(
+        env=env, name=args.task, args=args, train_cfg=train_cfg
+    )
+    ppo_runner.learn(
+        num_learning_iterations=train_cfg.runner.max_iterations,
+        init_at_random_ep_len=True,
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     args = get_args()
     args.rl_device = args.sim_device
     train(args)
