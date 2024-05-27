@@ -28,11 +28,20 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import torch
+
 from .base_config import BaseConfig
+
+
+free_mem, _ = torch.cuda.mem_get_info()
+
+NUM_ENVS = 8192 if free_mem > 10e9 else 2048
+
+print(f"\x1b[32mnum_envs = {NUM_ENVS}\x1b[0m")
 
 class LeggedRobotCfg(BaseConfig):
     class env:
-        num_envs = 4096
+        num_envs = NUM_ENVS
         num_observations = 251
         privileged_dim = 203 # 187 + 12 + 4
         privileged_obs = True # if True, add the privileged information in the obs
