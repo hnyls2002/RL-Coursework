@@ -39,6 +39,7 @@ NUM_ENVS = 8192 if free_mem > 10e9 else 2048
 
 print(f"\x1b[32mnum_envs = {NUM_ENVS}\x1b[0m")
 
+
 class LeggedRobotCfg(BaseConfig):
     class env:
         num_envs = NUM_ENVS
@@ -282,9 +283,9 @@ class LeggedRobotCfgPPO(BaseConfig):
         max_iterations = 20000  # number of policy updates
 
         # logging
-        save_interval = 100 # check for potential saves every this many iterations
-        experiment_name = 'test'
-        run_name = ''
+        save_interval = 100  # check for potential saves every this many iterations
+        experiment_name = "test"
+        run_name = ""
         # load and resume
         resume = False
         load_run = "teacher"  # -1 = last run
