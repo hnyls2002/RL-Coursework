@@ -179,4 +179,6 @@ if __name__ == "__main__":
     MOVE_CAMERA = True
     args = get_args()
     args.rl_device = args.sim_device
+    if args.no_move_camera:
+        MOVE_CAMERA = False
     play(args)

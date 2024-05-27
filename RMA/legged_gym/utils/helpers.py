@@ -226,6 +226,11 @@ def get_args():
         },
         {"name": "--exp_name", "type": str, "help": "For tert training."},
         {"name": "--device", "type": str, "help": "For tert training."},
+        {
+            "name": "--no_move_camera",
+            "action": "store_true",
+            "help": "For tert training.",
+        },
     ]
     # parse arguments
     args = gymutil.parse_arguments(
