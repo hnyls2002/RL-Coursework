@@ -169,8 +169,8 @@ class LeggedRobotCfg(BaseConfig):
         class scales:
             # Common Reward
             termination = -0.0  # penalize termination
-            tracking_lin_vel = 1.0  # reward for tracking linear velocity
-            tracking_ang_vel = 0.5  # reward for tracking angular velocity
+            tracking_lin_vel = 2.0  # reward for tracking linear velocity
+            tracking_ang_vel = 1.0  # reward for tracking angular velocity
             ang_vel_xy = -0.05  # penalize xy angular velocity
             torques = -0.0002  # penalize torques, encourage low torque
             collision = -1.0  # penalize collision
@@ -180,7 +180,7 @@ class LeggedRobotCfg(BaseConfig):
             action_rate = -0.01  # penalize high action rate
 
             # Bipeds Reward
-            lin_vel_z = -2.0  # penalize z velocity
+            lin_vel_z = 1.0  # reward z linear velocity
             orientation = -0.0  # penalize the base's orientation
             base_height = -0.0  # penalize distance from the target height
             feet_air_time = 1.0  # reward for feet air time
