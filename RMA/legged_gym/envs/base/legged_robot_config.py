@@ -34,7 +34,7 @@ from .base_config import BaseConfig
 
 free_mem, _ = torch.cuda.mem_get_info()
 
-NUM_ENVS = 8192 if free_mem > 10e9 else 2048
+NUM_ENVS = 4096 if free_mem > 10e9 else 2048
 
 print(f"\x1b[32mnum_envs = {NUM_ENVS}\x1b[0m")
 
