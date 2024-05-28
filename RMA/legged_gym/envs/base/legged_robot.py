@@ -1360,3 +1360,7 @@ class LeggedRobot(BaseTask):
             ),
             dim=1,
         )
+
+    def _reward_bipedal_orientation(self):
+        # Penalize non bipedal orientation
+        return torch.sum(torch.square(self.projected_gravity[:, 1:]), dim=1)

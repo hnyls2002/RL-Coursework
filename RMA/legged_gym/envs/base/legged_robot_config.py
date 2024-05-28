@@ -184,6 +184,7 @@ class LeggedRobotCfg(BaseConfig):
             orientation = -0.0  # penalize the base's orientation
             base_height = -0.0  # penalize distance from the target height
             feet_air_time = 1.0  # reward for feet air time
+            bipedal_orientation = -0.1
 
             # Uniped Reward
             feet_stumble = -0.0  # penalize feet stumble
