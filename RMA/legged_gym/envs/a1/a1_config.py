@@ -33,6 +33,7 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 class A1RoughCfg(LeggedRobotCfg):
     class init_state(LeggedRobotCfg.init_state):
+        # NOTE(lsyin): This init state is for the robot to stand bipedally on the ground
         pos = [0.0, 0.0, 0.5]
         rot = [0.0, -1.0, 0.0, 1.0]
         default_joint_angles = {
