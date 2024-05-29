@@ -1204,11 +1204,31 @@ class LeggedRobot(BaseTask):
     # ------------ reward functions----------------
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
-        return torch.square(self.base_lin_vel[:, 2])
+        max_z_vel = 9.0
+        lin_vel_z = torch.square(self.base_lin_vel[:, 2])
+        return torch.clip(lin_vel_z, 0.0, max_z_vel)
+
+    def _reward_lin_vel_x(self):
+        max_x_vel = 9.0
+        lin_vel_x = torch.square(self.base_lin_vel[:, 0])
+        return torch.clip(lin_vel_x, 0.0, max_x_vel)
+
+    def _reward_lin_vel_y(self):
+        # Penalize y axis base linear velocity
+        lin_vel_y = torch.square(self.base_lin_vel[:, 1])
+        return torch.exp(-lin_vel_y / 0.25)
 
     def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
         return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
+
+    def _reward_ang_vel_z(self):
+        ang_vel_z = torch.square(self.base_ang_vel[:, 2])
+        return torch.exp(-ang_vel_z / 0.25)
+
+    def _reward_ang_vel_x(self):
+        ang_vel_x = torch.square(self.base_ang_vel[:, 0])
+        return torch.exp(-ang_vel_x / 0.25)
 
     def _reward_orientation(self):
         # Penalize non flat base orientation
@@ -1363,4 +1383,24 @@ class LeggedRobot(BaseTask):
 
     def _reward_bipedal_orientation(self):
         # Penalize non bipedal orientation
-        return torch.sum(torch.square(self.projected_gravity[:, 1:]), dim=1)
+        return torch.sum(
+            torch.square(self.projected_gravity[:, 1:]),
+            dim=1,
+        )
+
+    def _reward_bipedal_fall_down(self):
+        MIN_P = 0.7 * 0.98
+        return (
+            torch.clip(
+                torch.sum(torch.square(self.projected_gravity[:, 1:]), dim=1),
+                MIN_P,
+                10**9,
+            )
+            - MIN_P
+        )
+
+    def _reward_total_climb_height(self):
+        # Reward total climb height
+        climb_height = self.root_states[:, 2] + self.terrain_levels * 0.15
+        MIN_H = -0.5
+        return torch.mean((climb_height - MIN_H) * self.terrain_levels) * 1e-2

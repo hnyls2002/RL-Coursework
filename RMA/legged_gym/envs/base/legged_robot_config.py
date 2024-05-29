@@ -104,10 +104,10 @@ class LeggedRobotCfg(BaseConfig):
         heading_command = True  # if true: compute ang vel command from heading error
 
         class ranges:
-            lin_vel_x = [0, 1.0]  # min max [m/s]
+            lin_vel_x = [0, 0]  # min max [m/s]
             lin_vel_y = [-0.0, 0.0]  # min max [m/s]
-            ang_vel_yaw = [-1, 1]  # min max [rad/s]
-            heading = [-3.14, 3.14]
+            ang_vel_yaw = [0, 0]  # min max [rad/s]
+            heading = [0, 0]
 
     class init_state:
         pos = [0.0, 0.0, 1.0]  # x,y,z [m]
@@ -167,28 +167,17 @@ class LeggedRobotCfg(BaseConfig):
 
     class rewards:
         class scales:
-            # Common Reward
-            termination = -0.0  # penalize termination
-            tracking_lin_vel = 1.0  # reward for tracking linear velocity
-            tracking_ang_vel = 0.5  # reward for tracking angular velocity
-            ang_vel_xy = -0.05  # penalize xy angular velocity
+            # Bipedal Climbing Stairs Reward
             torques = -0.0002  # penalize torques, encourage low torque
-            collision = -1.0  # penalize collision
-            dof_vel = -0.0  # penalize high joint velocities
-            dof_acc = -2.5e-7  # penalize high joint accelerations
-            stand_still = -0.0  # penalize stand still when no command is given
-            action_rate = -0.01  # penalize high action rate
-            stumble = -0.1  # penalize feet stumble
-
-            # Bipeds Reward
-            lin_vel_z = 1.0  # reward z linear velocity
-            orientation = -0.0  # penalize the base's orientation
-            base_height = -0.0  # penalize distance from the target height
-            feet_air_time = 1.0  # reward for feet air time
-            bipedal_orientation = -0.1
-
-            # Uniped Reward
-            # hip_pos = -0.5  # penalize hip position
+            action_rate = -0.05  # penalize high action rate
+            lin_vel_z = 1.5  # Goal: move forward
+            lin_vel_x = 2.0  # reward for x linear velocity
+            lin_vel_y = 1.0  # penalize y linear velocity
+            ang_vel_x = 5.0  # penalize x angular velocity
+            ang_vel_z = 1.0  # penalize z angular velocity
+            bipedal_orientation = -5.0
+            bipedal_fall_down = -10.0
+            total_climb_height = 10.0
 
         only_positive_rewards = True  # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25  # tracking reward = exp(-error^2/sigma)
