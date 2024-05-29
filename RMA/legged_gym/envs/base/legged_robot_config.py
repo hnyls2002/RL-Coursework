@@ -52,7 +52,7 @@ class LeggedRobotCfg(BaseConfig):
         episode_length_s = 20  # episode length in seconds
 
     class terrain:
-        mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
+        mesh_type = "plane"  # "heightfield" # none, plane, heightfield or trimesh
         horizontal_scale = 0.1  # [m]
         vertical_scale = 0.005  # [m]
         border_size = 25  # [m]
@@ -168,16 +168,47 @@ class LeggedRobotCfg(BaseConfig):
     class rewards:
         class scales:
             # Bipedal Climbing Stairs Reward
-            torques = -0.0002  # penalize torques, encourage low torque
+            # torques = -0.0002  # penalize torques, encourage low torque
+            # action_rate = -0.05  # penalize high action rate
+            # lin_vel_z = 1.5  # Goal: move forward
+            # lin_vel_x = 2.0  # reward for x linear velocity
+            # lin_vel_y = 1.0  # penalize y linear velocity
+            # ang_vel_x = 5.0  # penalize x angular velocity
+            # ang_vel_z = 1.0  # penalize z angular velocity
+            # bipedal_orientation = -5.0
+            # bipedal_fall_down = -10.0
+            # total_climb_height = 10.0
+
+            # Bipedal Walking Reward
+            torques = -0.0002
             action_rate = -0.05  # penalize high action rate
-            lin_vel_z = 1.5  # Goal: move forward
-            lin_vel_x = 2.0  # reward for x linear velocity
+            lin_vel_z = 1.0  # Goal: move forward
+            lin_vel_x = 0.5  # reward for x linear velocity
             lin_vel_y = 1.0  # penalize y linear velocity
             ang_vel_x = 5.0  # penalize x angular velocity
             ang_vel_z = 1.0  # penalize z angular velocity
             bipedal_orientation = -5.0
             bipedal_fall_down = -10.0
-            total_climb_height = 10.0
+            dof_acc = -2.5e-7
+            collision = -1.0
+
+            # Original Reward
+            # termination = -0.0
+            # tracking_lin_vel = 1.0
+            # tracking_ang_vel = 0.5
+            # lin_vel_z = -2.0
+            # ang_vel_xy = -0.05
+            # orientation = -0.0
+            # torques = -0.0002
+            # dof_vel = -0.0
+            # dof_acc = -2.5e-7
+            # base_height = -0.0
+            # feet_air_time = 1.0
+            # collision = -1.0
+            # feet_stumble = -0.0
+            # action_rate = -0.01
+            # stand_still = -0.0
+            # hip_pos = -0.5
 
         only_positive_rewards = True  # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25  # tracking reward = exp(-error^2/sigma)
