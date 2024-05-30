@@ -1,0 +1,277 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2024_conference,times}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{float}
+\usepackage{enumitem}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+
+\title{Quadruped Robots Walk Bipedally \\ Using Reward-Based Methods}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Liangsheng Yin \\
+Reinforcement Learning Course, ACM 2021\\
+Shanghai Jiao Tong University\\
+% Pittsburgh, PA 15213, USA \\
+\texttt{liangsheng.yin@outlook.com} \\ }
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors' names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+   Most quadruped robots are trained for a quadrupedal gait using reinforcement learning techniques such as Rapid Motor Adaption (RMA). However, training them for \textbf{bipedal walking within the same framework} holds great potential. This course project introduces a reward-based method to train quadruped robots for bipedal walking on \textit{plain} and \textit{stairs} terrains. It achieves favorable results in metrics such as linear tracking velocity, total climbing height, and fall prevention. Additionally, it demonstrates that RMA is a feasible method for training quadruped robots for bipedal walking in a simulated environment, showcasing its significant robustness and adaptability. 
+\end{abstract}
+
+\section{Introduction}
+
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=1.0\textwidth]{plane_walk.pdf}
+   \caption{Bipedal Walking Posture on Plane Terrain}
+   \label{fig:plan_walk}
+\end{figure}
+
+Training quadruped robots to walk on four legs is a well-established field in robotics. This course project is based on the famous Rapid Motor Adaptation (RMA) algorithm and its open-source implementation ~\citep{kumar2021rma}. Since the introduction of RMA, other research aimed at enhancing this algorithm has been proposed, including efforts for more precise and safe control ~\citep{SAVIOLO202345}, as well as integration with egocentric vision ~\cite{pmlr-v205-agarwal23a}.
+
+Bipedal robots represent another important research topic, as they often resemble humans and possess significant potential for deployment in real-world industries. Various studies have been proposed for human-like robots with whole-body control ~\citep{cheng2024expressive}. However, these robots often have too many degrees of freedom, making it challenging to define the reward functions necessary for control.
+
+
+These two topics bring an interesting idea: Can we make the quadruped robots behave like straight-standing dogs, walking bipedally while maintaining balance? Our framework, the RMA algorithm, is known for its rapid adaptation capabilities. However, the teacher training phase also embraces a classic reinforcement learning process with the PPO algorithm ~\citep{schulman2017proximal}, which means we can change the reward functions to make the teacher walk bipedally and then distill the ability to the student. The Unitree A1 quadruped robot possesses only 12 degrees of freedom, fewer than a human-like robot, making this goal more achievable. Recent research ~\citep{li2024learning} has also shown a similar result to let quadruped robots stand bipedally and imitate human action.
+
+
+Our method includes adjusting the robot's initial rotation and joint angles, modifying the commands, and introducing a set of reward functions designed for bipedal walking on plain and stairs terrains respectively. Our result shows great balancing ability even when climbing steep stairs. The \autoref{fig:plan_walk} shows the bipedal walking posture on the plane terrain with a time interval of 0.1s and the blue arrow represents the moving direction. The \autoref{fig:climb_out} shows the process of climbing out of a square pit with a time interval of 0.5s and the robot keeps a bipedal orientation while climbing the stairs.
+
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=1.0\textwidth]{climb_out.pdf}
+   \caption{Process of Climbing out of a Square Pit}
+   \label{fig:climb_out}
+\end{figure}
+
+
+
+\section{Reward-Based Method to Bipedal Walking}
+
+\subsection{Initial Rotation and Joint Angles}
+
+The first challenge is how to make the initially horizontal robot's body (we call it base in the code) stand up since the default body's position and rotation are designed for walking with four legs. When trying to raise the robot's base from the ground to a standing position, it requires an extra training phase to let the network learn how to stand up slowly and robustly. However, when later training from the standing position to walking, the network may be disturbed by the change of rewards and lose the ability to stand up. To solve this problem, we adjust the initial status of the robot, making it ready for bipedal walking at the beginning of the training process. The parameters are shown in \autoref{tab:rotation_parameters} and \autoref{tab:joint_parameters}.
+
+\begin{table}[h]
+   \centering
+   \begin{tabular}{@{}lcc@{}}
+   \toprule
+   Dimensions     & Default Parameter (quat) & Bipedal Walking Parameter (quat) \\ \midrule
+   \midrule
+   x     & 0.0          &  0.0     \\
+   y     & 0.0          &  -1.0    \\
+   z     & 0.0          &  0.0     \\
+   w     & 1.0          &  1.0     \\
+   \bottomrule
+\end{tabular}
+\vspace{-0.5em}
+\caption{Rotation Parameters}
+\label{tab:rotation_parameters}
+\end{table}
+
+\begin{table}[h]
+   \centering
+   \begin{tabular}{@{}lcc@{}}
+   \toprule
+   Joint Name       & Default Parameter (rad) & Bipedal Walking Parameter (rad) \\ \midrule
+   \midrule
+   FL Hip    & 0.1           &  0.2     \\
+   RL Hip    & 0.1           &  0.7     \\
+   FR Hip    & -0.1          &  0.2     \\
+   RR Hip    & -0.1          &  0.7     \\
+   FL Thigh  & 0.8           &  -1.0    \\
+   RL Thigh  & 1.0           &  1.5     \\
+   FR Thigh  & 0.8           &  -1.0    \\
+   RR Thigh  & 1.0           &  1.5     \\
+   FL Calf   & -1.5          &  -2.2    \\
+   RL Calf   & -1.5          &  -0.8    \\
+   FR Calf   & -1.5          &  -2.2    \\
+   RR Calf   & -1.5          &  -0.8    \\
+   \bottomrule
+\end{tabular}
+\vspace{-0.5em}
+\caption{Joint Parameters}
+\label{tab:joint_parameters}
+\end{table}
+
+\subsection{Commands Modification}
+
+The original training framework assigns an \texttt{x}-axis velocity and a random angular velocity for the \texttt{xy} plane, as shown in ~\autoref{fig:orientation}. When we make the base stand up straight, we must remove all velocity towards the \texttt{x}-axis, as it now represents the vertical direction. The original \texttt{x}-axis velocity is for the \texttt{tracking\_lin\_vel} reward. Therefore, if we want to train the robot to walk bipedally, we should add a \texttt{z}-axis velocity and a reward for \texttt{tracking\_lin\_vel\_z}. Alternatively, we can use another reward, \texttt{lin\_vel\_z}, instead (see \autoref{sec:plane_walking}). This approach avoids modifying too much code in the training framework.
+
+% insert a pdf figure
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=1.0\textwidth]{orientation.pdf}
+   \caption{Base Orientation of Quadruped and Bipedal Walking}
+   \label{fig:orientation}
+\end{figure}
+
+
+\subsection{Rewards for Plane Walking}
+\label{sec:plane_walking}
+
+\subsubsection{Reward Linear Velocity in Z Axis.} 
+
+
+As demonstrated in the bipedal example of \autoref{fig:orientation}, to encourage forward movement in bipedal walking without directly adding a \texttt{z}-axis velocity to track such direction, it is pivotal to motivate the robot towards forward motion by monitoring the \texttt{z}-axis velocity. To this end, we introduce a reward function, \texttt{reward\_lin\_vel\_z}, as detailed in \autoref{alg:reward_lin_vel_z}. However, during bipedal locomotion, \textit{if the robot falls, the \texttt{z}-axis velocity may surge to excessively high levels, creating the risk of a gradient explosion within the network. To prevent this, we cap the velocity at a maximum value, which is set to 9.0 in our experiments.}
+
+\begin{algorithm}[H]
+\caption{Calculate Reward Based on Linear Velocity in Z Axis}
+\label{alg:reward_lin_vel_z}
+\begin{algorithmic}
+\Function{RewardLinVelZ}{}
+    \State \textbf{Parameters:} $\text{max\_z\_vel} \gets 9.0$
+    \State \textbf{Initialize:} $\text{lin\_vel\_z} \gets \Call{Square}{\text{base\_lin\_vel\_z}}$
+    \State \textbf{Return} $\Call{Clip}{\text{lin\_vel\_z}, 0.0, \text{max\_z\_vel}}$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Penalize Other Directions' Linear and Angular Velocity.}
+
+To incentivize forward movement, it's also important to penalize linear and angular velocities in other directions. For instance, a reward function \texttt{penalize\_ang\_vel\_z}, as shown in \autoref{alg:penalize_ang_vel_z}, is added to penalize the angular velocity in the \texttt{z}-axis, corresponding to the robot's rotation around the \texttt{z}-axis. The penalty is calculated using the exponential function of the negative square of the angular velocity, a standard method in reinforcement learning to discourage high values of a variable.
+
+\begin{algorithm}[H]
+   \caption{Calculate Panelty Based on Angular Velocity in Z Axis}
+   \label{alg:penalize_ang_vel_z}
+   \begin{algorithmic}
+   \Function{PenalizeAngVelZ}{}
+       \State $\text{ang\_vel\_z} \gets \Call{Square}{\text{base\_ang\_vel\_z}}$
+       \State \Return $\exp(\text{-ang\_vel\_z} / 0.25)$
+   \EndFunction
+   \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Reward Bipedal Orientation.}
+
+
+To promote continuous upright posture in the robot, we introduce a crucial reward function, \texttt{reward\_bipedal\_orientation}, as detailed in \autoref{alg:reward_bipedal_orientation}. This function penalizes the robot's deviation from the vertical axis. The reward is computed as the sum of the squares of the projected gravity vector on the \texttt{yz} plane, which is the plane on which the robot stands. This reward is structured to be positive, with higher values indicating a more vertical orientation of the robot.
+
+\begin{algorithm}[H]
+   \caption{Reward Bipedal Orientation}
+   \label{alg:reward_bipedal_orientation}
+   \begin{algorithmic}
+   \Function{RewardBipedalOrientation}{}
+       \State \Return $\sum (\Call{Square}{\text{projected\_gravity\_yz}})$ \Comment{Sum over dim=1}
+   \EndFunction
+   \end{algorithmic}
+\end{algorithm}
+
+\subsection{Rewards for Stair Climbing}
+
+The reward functions previously described are optimized for bipedal walking on level ground. \textit{However, applying the same reward structures to stair climbing scenarios within a square pit may result in suboptimal performance, where the robot fails to effectively ascend the stairs. Instead, it may persist in moving in a circular path at the pit's base.} To address this issue, we introduce the \texttt{total\_climb\_height}~\autoref{alg:reward_climb} reward, designed to motivate the robot to tackle the stairs successfully. This reward is computed based on the average of the total climb height, which equals the sum of heights that the robot's root state has ascended, each multiplied by the height interval which denotes the elevation difference between two successive levels of terrain. In our experiments, we set the minimum height threshold at -0.5.
+
+\begin{algorithm}[H]
+   \caption{Reward Total Climb Height}
+   \label{alg:reward_climb}
+   \begin{algorithmic}
+   \Function{RewardTotalClimbHeight}{}
+       \State $\text{climb\_height} \gets \text{root\_states\_h} + \text{terrain\_levels} \times \text{height\_interval}$
+       \State \Return $\Call{Mean}{(\text{climb\_height} - \text{MIN\_H}) \times \text{terrain\_levels}}$
+   \EndFunction
+   \end{algorithmic}
+\end{algorithm}
+
+\section{Experiment Setup}
+
+\subsection{Reward Scales}
+
+The detailed reward functions used in the experiments are as follows:
+
+\begin{itemize}[itemsep=-0.3em]
+   \item Torques: Penalize high joint torques.
+   \item Action Rate: Penalize high action rate.
+   \item \texttt{z} Linear Velocity: Encourage forward movement.
+   \item \texttt{x} Linear Velocity: Penalize movement in the \texttt{x} direction.
+   \item \texttt{y} Linear Velocity: Penalize movement in the \texttt{y} direction.
+   \item \texttt{x} Angular Velocity: Penalize rotation around the \texttt{x} axis.
+   \item \texttt{z} Angular Velocity: Penalize rotation around the \texttt{z} axis.
+   \item Bipedal Orientation: Encourage vertical orientation.
+   \item Bipedal Fall Down: Penalize falling down.
+   \item Total Climb Height: Encourage climbing stairs.
+   \item Collision: Penalize collision.
+\end{itemize}
+
+The reward scales for the plain and stairs terrains are shown in \autoref{tab:reward_scales}.
+
+\begin{table}[H]
+   \centering
+   \begin{tabular}{@{}lcc@{}}
+   \toprule
+   Reward Name       & Plain Terrain   & Stairs Terrain \\ \midrule
+   torques           &-0.0002          & -0.0002 \\
+   action rate       & -0.05           & -0.05 \\
+   z linear velocity & 1.0             & 1.5 \\
+   x linear velocity & 0.5             & 2.0  \\
+   y linear velocity & 1.0             & 1.0  \\
+   x angular velocity & 5.0            & 5.0  \\
+   z angular velocity & 1.0            & 1.0  \\
+   bipedal orientation & -5.0          & -5.0 \\
+   bipedal fall down   & -10.0         & -10.0 \\
+   total climb height &  0             & 10.0 \\
+   collision         & -1.0            & 0 \\
+   \bottomrule
+   \end{tabular}
+\vspace{-0.5em}
+\caption{Reward Scales}
+\label{tab:reward_scales}
+\end{table}
+
+
+\section{Result and Discussion}
+
+\subsection{Plane Walking}
+
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=1.0\textwidth]{many_plane_walk.pdf}
+   \caption{Bipedal Walking on Plane Terrain}
+   \label{fig:many_plane_walk}
+\end{figure}
+
+The teacher and student models exhibit comparable performance on flat terrain, as demonstrated in the experiments shown in ~\autoref{fig:many_plane_walk}, where 128 quadruped robots are simulated to walk bipedally across a vast planar surface. Results indicate that the average \texttt{z}-axis velocity can reach up to $3m/s$, with a fall probability within $2\%$.
+
+\subsection{Stairs Climbing}
+
+When it comes to climbing stairs, the teacher model slightly outperforms the student model in terms of balance. With staircases comprising 10 levels of \texttt{trimesh} stairs, each level separated by approximately $0.15$m, the teacher model successfully ascends to the 4th level, whereas the student model peaks at the 3rd level. Across all 10 \texttt{trimesh} stair levels, the teacher model exhibits a lower fall probability, in comparison to the student model's higher fall likelihood of about $10\%$.
+
+\subsection{Stairs Climbing}
+
+\bibliography{iclr2024_conference}
+\bibliographystyle{iclr2024_conference}
+
+\appendix
+% \section{Appendix}
+% You may include other additional sections here.
+
+\end{document}
