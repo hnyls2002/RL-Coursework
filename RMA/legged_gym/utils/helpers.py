@@ -189,6 +189,7 @@ def get_args():
         {
             "name": "--checkpoint",
             "type": int,
+            "default": -1,
             "help": "Saved model checkpoint number. If -1: will load the last checkpoint. Overrides config file if provided.",
         },
         {

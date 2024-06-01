@@ -51,7 +51,7 @@ def train(args):
 
     train_cfg.runner.run_name = "student"
     train_cfg.runner.resume = True
-    train_cfg.runner.load_run = "Mar17_11-36-01_teacher"
+    train_cfg.runner.load_run = "teacher"
     train_cfg.runner.checkpoint = -1
 
     env, env_cfg = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)

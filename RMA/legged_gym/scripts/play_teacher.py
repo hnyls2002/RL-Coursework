@@ -84,12 +84,10 @@ def play(args):
     ppo_runner, train_cfg = task_registry.make_teacher_runner(
         env=env, name=args.task, args=args, train_cfg=train_cfg
     )
-    load_run = "Mar17_11-36-01_teacher"
-    checkpoint = 3000
     log_root = os.path.join(
         LEGGED_GYM_ROOT_DIR, "logs", train_cfg.runner.experiment_name
     )
-    path = get_load_path(log_root, load_run=load_run, checkpoint=checkpoint)
+    path = get_load_path(log_root, load_run=args.load_run, checkpoint=args.checkpoint)
     print(f"Loading model from: {path}")
     ppo_runner.load(path=path)
     policy = ppo_runner.get_inference_policy(device=env.device)
@@ -181,4 +179,11 @@ if __name__ == "__main__":
     args.rl_device = args.sim_device
     if args.no_move_camera:
         MOVE_CAMERA = False
+    if args.load_run is None:
+        args.load_run = "teacher"
+        print(
+            f"\x1b[33mWarning: No load run specified, using default: {args.load_run}\x1b[0m"
+        )
+    if args.checkpoint == -1:
+        print(f"\x1b[33mWarning: No checkpoint specified, using last checkpoint\x1b[0m")
     play(args)

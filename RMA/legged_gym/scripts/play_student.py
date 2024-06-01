@@ -79,8 +79,8 @@ def play(args):
     ppo_runner, train_cfg = task_registry.make_student_runner(
         env=env, name=args.task, args=args, train_cfg=train_cfg
     )
-    load_run = "Mar17_13-29-15_student"
-    checkpoint = 2000
+    load_run = "student"
+    checkpoint = -1
     log_root = os.path.join(
         LEGGED_GYM_ROOT_DIR, "logs", train_cfg.runner.experiment_name
     )
